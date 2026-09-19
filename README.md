@@ -100,18 +100,38 @@ let result = formatter.format({
 });
 ```
 
-### Protocol does not require a unit
+### Protocol requires both `value` and `unit` fields
 
-The protocol accepts objects with a `value` getter even if their `unit` getter returns `undefined`:
+The protocol requires that objects have both a `value` and a `unit` field:
 
 ```javascript
 let formatter = new Intl.NumberFormat(locale, {
     style: "unit",
-    unit,
 });
-let result = formatter.format({
-    value,
+formatter.format({
+    value: 333,
+    unit: null,
 });
+// '333'
+```
+
+If either is absent or `undefined`, we revert to the current behavior of calling `Symbol.toPrimitive`:
+
+```javascript
+let formatter = new Intl.NumberFormat(locale, {
+    style: "unit",
+});
+formatter.format({
+  value: 333,
+  unit: undefined,
+  [Symbol.toPrimitive](hint) {
+    if (hint === 'number') {
+      return 111;
+    }
+    return 222;
+  },
+});
+// '111'
 ```
 
 ### Conflicting Units
