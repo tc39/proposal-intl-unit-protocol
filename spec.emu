@@ -306,12 +306,14 @@ contributors: Shane F Carr
         </dd>
       </dl>
       <emu-alg>
+        1. Let _value_ be _input_.
+        1. Let _inputUnit_ be *undefined*.
         1. If _input_ is an Object, then
-          1. Let _value_ be ? Get(_input_, *"value"*).
-          1. Let _inputUnit_ be ? GetOption(_input_, *"unit"*, ~string~, ~empty~, *undefined*).
-        1. Else,
-          1. Let _value_ be _input_.
-          1. Let _inputUnit_ be *undefined*.
+          1. Let _candidateValue_ be ? Get(_input_, *"value"*).
+          1. Let _candidateInputUnit_ be ? Get(_input_, *"unit"*).
+          1. If _candidateValue_ is not *undefined* and _candidateInputUnit_ is not *undefined*, then
+            1. Set _value_ to _candidateValue_.
+            1. Set _inputUnit_ to _candidateInputUnit_.
         1. Let _intlMV_ be ? ToIntlMathematicalValue(_value_).
         1. If _numberFormat_.[[Style]] is *"unit"*, then
           1. Let _formatterUnit_ be _numberFormat_.[[Unit]].
@@ -321,6 +323,7 @@ contributors: Shane F Carr
             1. Assert: IsWellFormedUnitIdentifier(_formatterUnit_) is *true*.
             1. Let _resolvedUnit_ be _formatterUnit_.
           1. Else if _formatterUnit_ is *undefined*, then
+            1. If _inputUnit_ is not a String, throw a *TypeError* exception.
             1. If IsWellFormedUnitIdentifier(_inputUnit_) is *false*, throw a *RangeError* exception.
             1. Let _resolvedUnit_ be _inputUnit_.
           1. Else,
