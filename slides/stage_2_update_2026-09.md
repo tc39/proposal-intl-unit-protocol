@@ -3,6 +3,12 @@ marp: true
 theme: default
 paginate: true
 footer: 'Intl Unit Protocol - Stage 2 Update'
+style: |
+  .columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
 ---
 
 <!-- 
@@ -19,50 +25,82 @@ _color: #ffffff
 
 ## Background & Motivation
 
-A number ought to be annotated with the quantity it is measuring. The unit is a core part of the data model to be formatted, unlocking i18n features such as locale unit preferences and automatic unit conversion:
+<div class="columns">
+<div>
+
+A number ought to be annotated with the quantity it is measuring.
+
+- The unit is part of the **data model**, not just a formatting style.
+- Unlocks locale unit preferences and automatic unit conversion.
+- Only data type needed for MessageFormat 2.0 without a JS analog.
+- Defines how `Amount` and third-party classes interface with `Intl`.
+
+</div>
+<div>
 
 ```javascript
-const message = "You are {$distance :unit usage=road} from your destination";
-let formatter = new MessageFormat("en", message);
+const message =
+  "You are {$distance :unit " +
+  "usage=road} from destination";
+
+let formatter =
+  new MessageFormat("en", message);
+
 formatter.format({
   distance: /* what goes here? */
 });
 ```
 
-- A number with a unit is the only data type required by MessageFormat 2.0 without a JavaScript analog.
-- Defines how `Amount` and third-party classes interface with `Intl`.
+</div>
+</div>
 
 ---
 
 ## Proposal Recap
 
-Add a protocol to `Intl.NumberFormat.prototype.format` (and `Intl.PluralRules.prototype.select`) accepting an options bag with `value` and `unit`:
+<div class="columns">
+<div>
+
+### Current: Constructor Option
 
 ```javascript
-// Current:
-let formatter = new Intl.NumberFormat(locale, {
-  style: "unit",
-  unit,
-});
-let result = formatter.format(value);
+let formatter =
+  new Intl.NumberFormat(locale, {
+    style: "unit",
+    unit,
+  });
 
-// Proposed:
-let formatter = new Intl.NumberFormat(locale, {
-  style: "unit",
-});
-let result = formatter.format({
-  value,
-  unit,
-});
+let result =
+  formatter.format(value);
 ```
+
+</div>
+<div>
+
+### Proposed: Format Protocol
+
+```javascript
+let formatter =
+  new Intl.NumberFormat(locale, {
+    style: "unit",
+  });
+
+let result =
+  formatter.format({
+    value,
+    unit,
+  });
+```
+
+</div>
+</div>
 
 ---
 
 ## Issue #5: Protocol sniffing behavior
 
-`Intl.NumberFormat.prototype.format` has always called `ToPrimitive` on Object arguments. Unconditionally reading `.value` on all Objects would break existing code relying on `Symbol.toPrimitive` or `valueOf`.
-
-To determine whether an Object implements the protocol, perform `Get` on both `"value"` and `"unit"` and check that neither is `undefined`:
+- `format()` historically coerces Object arguments via `ToPrimitive`. Unconditionally reading `.value` breaks existing objects relying on `Symbol.toPrimitive` or `valueOf`.
+- Solution: Perform `Get` on `"value"` and `"unit"`. Only activate the protocol if neither is `undefined`:
 
 ```
 1. Let value be input.
@@ -70,7 +108,7 @@ To determine whether an Object implements the protocol, perform `Get` on both `"
 3. If input is an Object, then
    a. Let candidateValue be ? Get(input, "value").
    b. Let candidateInputUnit be ? Get(input, "unit").
-   c. If candidateValue is not undefined and candidateInputUnit is not undefined, then
+   c. If candidateValue is not undefined and candidateInputUnit is not undefined:
       i. Set value to candidateValue.
       ii. Set inputUnit to candidateInputUnit.
 4. Let intlMV be ? ToIntlMathematicalValue(value).
@@ -80,42 +118,77 @@ To determine whether an Object implements the protocol, perform `Get` on both `"
 
 ## Issue #5: `unit: null` vs `unit: undefined`
 
-Dimensionless objects in the protocol use `unit: null`:
+<div class="columns">
+<div>
+
+### Dimensionless: `unit: null`
 
 ```javascript
-let formatter = new Intl.NumberFormat(locale, { style: "unit" });
+let formatter =
+  new Intl.NumberFormat(locale, {
+    style: "unit",
+  });
+
 formatter.format({
   value: 333,
   unit: null,
-}); // "333"
+});
+// "333"
 ```
 
-If either `value` or `unit` is absent or `undefined`, revert to calling `Symbol.toPrimitive` on the input object:
+Aligned with `Amount`: `null` represents no unit.
+
+</div>
+<div>
+
+### Fallback: `unit: undefined`
 
 ```javascript
 formatter.format({
   value: 333,
   unit: undefined,
   [Symbol.toPrimitive](hint) {
-    return hint === "number" ? 111 : 222;
+    return hint === "number"
+      ? 111 : 222;
   },
-}); // "111"
+});
+// "111"
 ```
+
+Reverts to calling `Symbol.toPrimitive` on input.
+
+</div>
+</div>
 
 ---
 
 ## Open Question: Non-unit formatters (#7)
 
-`Intl.NumberFormat` `style` can be `"decimal"`, `"percent"`, `"currency"`, or `"unit"`. What should happen if a protocol object is passed to a non-unit, non-currency formatter?
+<div class="columns">
+<div>
+
+What should happen when passing a protocol object to a non-unit/non-currency formatter?
 
 ```javascript
-const nf = new Intl.NumberFormat("en"); // default: style "decimal"
-nf.format({ value: 333, unit: null });
+const nf =
+  new Intl.NumberFormat("en");
+  // default: style "decimal"
+
+nf.format({
+  value: 333,
+  unit: null,
+});
 ```
 
-1. Throw a `TypeError` because the formatter was not configured with `style: "unit"` or `"currency"` (current spec text).
-2. Ignore the `null` unit and format as `"333"`.
-3. Only check for the protocol when `style` is `"unit"` or `"currency"`, falling back to `Symbol.toPrimitive` otherwise (also resolves [#8](https://github.com/tc39/proposal-intl-unit-protocol/issues/8) on when to type-check `inputUnit`).
+</div>
+<div>
+
+1. **Throw `TypeError`**: Formatter was not configured with `style: "unit"` or `"currency"` (current spec text).
+2. **Format as `"333"`**: Ignore the `null` unit as dimensionless.
+3. **Fall back to `Symbol.toPrimitive`**: Only check for protocol when `style` is `"unit"` or `"currency"` (also resolves [#8](https://github.com/tc39/proposal-intl-unit-protocol/issues/8)).
+
+</div>
+</div>
 
 ---
 
