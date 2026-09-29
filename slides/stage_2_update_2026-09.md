@@ -169,17 +169,14 @@ No difference between explicit `undefined` and a missing field.
 Should `ToIntlMathematicalValue` (and thus `ToPrimitive`) be called on `.value`?
 
 ```javascript
-class CustomDecimal {
-  constructor(val) {
-    this.val = String(val);
-  }
+const customDecimal = {
   [Symbol.toPrimitive]() {
-    return this.val;
-  }
-}
+    return 333;
+  },
+};
 
 formatter.format({
-  value: new CustomDecimal(333),
+  value: customDecimal,
   unit: "meter",
 });
 ```
@@ -187,13 +184,8 @@ formatter.format({
 </div>
 <div>
 
-1. **Yes, coerce with `ToIntlMathematicalValue`** *(current spec)*:
-   - Uses standard ECMA-402 AO handling Number, BigInt, String, and `ToPrimitive` objects.
-   - Unit protocol deals only with unpacking `{ value, unit }` without changing number consumption semantics.
-   - Seamlessly supports custom numeric types.
-2. **No, disallow object coercion**:
-   - Aligns with "stop coercing things" principle.
-   - Downside: Makes `format()` self-inconsistent (`format(obj)` coerces, but `format({ value: obj, unit })` would not).
+1. **Yes: `ToIntlMathematicalValue`** *(current spec)*: Leverages existing, nontrivial abstract operation. Unpacks `{ value, unit }` without altering number consumption, supporting custom numeric types.
+2. **No: Disallow object coercion**: Aligns with "stop coercing things". But makes `format()` self-inconsistent.
 
 </div>
 </div>
