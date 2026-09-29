@@ -191,36 +191,22 @@ formatter.<span class="hljs-title function_">format</span>({
 <div class="columns">
 <div>
 <p>Should <code>ToIntlMathematicalValue</code> (and thus <code>ToPrimitive</code>) be called on <code>.value</code>?</p>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-javascript"><span class="hljs-keyword">class</span> <span class="hljs-title class_">CustomDecimal</span> {
-  <span class="hljs-title function_">constructor</span>(<span class="hljs-params">val</span>) {
-    <span class="hljs-variable language_">this</span>.<span class="hljs-property">val</span> = <span class="hljs-title class_">String</span>(val);
-  }
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-javascript"><span class="hljs-keyword">const</span> customDecimal = {
   [<span class="hljs-title class_">Symbol</span>.<span class="hljs-property">toPrimitive</span>]() {
-    <span class="hljs-keyword">return</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">val</span>;
-  }
-}
+    <span class="hljs-keyword">return</span> <span class="hljs-number">333</span>;
+  },
+};
 
 formatter.<span class="hljs-title function_">format</span>({
-  <span class="hljs-attr">value</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">CustomDecimal</span>(<span class="hljs-number">333</span>),
+  <span class="hljs-attr">value</span>: customDecimal,
   <span class="hljs-attr">unit</span>: <span class="hljs-string">&quot;meter&quot;</span>,
 });
 </code></pre>
 </div>
 <div>
 <ol>
-<li><strong>Yes, coerce with <code>ToIntlMathematicalValue</code></strong> <em>(current spec)</em>:
-<ul>
-<li>Uses standard ECMA-402 AO handling Number, BigInt, String, and <code>ToPrimitive</code> objects.</li>
-<li>Unit protocol deals only with unpacking <code>{ value, unit }</code> without changing number consumption semantics.</li>
-<li>Seamlessly supports custom numeric types.</li>
-</ul>
-</li>
-<li><strong>No, disallow object coercion</strong>:
-<ul>
-<li>Aligns with &quot;stop coercing things&quot; principle.</li>
-<li>Downside: Makes <code>format()</code> self-inconsistent (<code>format(obj)</code> coerces, but <code>format({ value: obj, unit })</code> would not).</li>
-</ul>
-</li>
+<li><strong>Yes: <code>ToIntlMathematicalValue</code></strong> <em>(current spec)</em>: Leverages existing, nontrivial abstract operation. Unpacks <code>{ value, unit }</code> without altering number consumption, supporting custom numeric types.</li>
+<li><strong>No: Disallow object coercion</strong>: Aligns with &quot;stop coercing things&quot;. But makes <code>format()</code> self-inconsistent.</li>
 </ol>
 </div>
 </div>
