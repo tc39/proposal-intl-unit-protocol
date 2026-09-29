@@ -161,6 +161,45 @@ No difference between explicit `undefined` and a missing field.
 
 ---
 
+## Open Question: Coercing the `value` field (#6)
+
+<div class="columns">
+<div>
+
+Should `ToIntlMathematicalValue` (and thus `ToPrimitive`) be called on `.value`?
+
+```javascript
+class CustomDecimal {
+  constructor(val) {
+    this.val = String(val);
+  }
+  [Symbol.toPrimitive]() {
+    return this.val;
+  }
+}
+
+formatter.format({
+  value: new CustomDecimal(333),
+  unit: "meter",
+});
+```
+
+</div>
+<div>
+
+1. **Yes, coerce with `ToIntlMathematicalValue`** *(current spec)*:
+   - Uses standard ECMA-402 AO handling Number, BigInt, String, and `ToPrimitive` objects.
+   - Unit protocol deals only with unpacking `{ value, unit }` without changing number consumption semantics.
+   - Seamlessly supports custom numeric types.
+2. **No, disallow object coercion**:
+   - Aligns with "stop coercing things" principle.
+   - Downside: Makes `format()` self-inconsistent (`format(obj)` coerces, but `format({ value: obj, unit })` would not).
+
+</div>
+</div>
+
+---
+
 ## Open Question: Non-unit formatters (#7)
 
 <div class="columns">
