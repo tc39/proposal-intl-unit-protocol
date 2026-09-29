@@ -30,9 +30,9 @@ _color: #ffffff
 
 A number ought to be annotated with the quantity it is measuring.
 
-- The unit is part of the **data model**, not just a formatting style.
+- The unit is part of the data model, not just a formatting style.
+- Only MessageFormat input without a native JS type.
 - Unlocks locale unit preferences and automatic unit conversion.
-- Only data type needed for MessageFormat 2.0 without a JS analog.
 - Defines how `Amount` and third-party classes interface with `Intl`.
 
 </div>
@@ -135,7 +135,7 @@ formatter.format({
 // "333"
 ```
 
-Aligned with `Amount`: `null` represents no unit.
+`null` is used for a number with explicitly no unit.
 
 </div>
 <div>
@@ -154,7 +154,7 @@ formatter.format({
 // "111"
 ```
 
-Reverts to calling `Symbol.toPrimitive` on input.
+No difference between explicit `undefined` and a missing field.
 
 </div>
 </div>
@@ -171,11 +171,14 @@ What should happen when passing a protocol object to a non-unit/non-currency for
 ```javascript
 const nf =
   new Intl.NumberFormat("en");
-  // default: style "decimal"
 
 nf.format({
   value: 333,
   unit: null,
+  [Symbol.toPrimitive](hint) {
+    return hint === "number"
+      ? 111 : 222;
+  },
 });
 ```
 
@@ -184,7 +187,7 @@ nf.format({
 
 1. **Throw `TypeError`**: Formatter was not configured with `style: "unit"` or `"currency"` (current spec text).
 2. **Format as `"333"`**: Ignore the `null` unit as dimensionless.
-3. **Fall back to `Symbol.toPrimitive`**: Only check for protocol when `style` is `"unit"` or `"currency"` (also resolves [#8](https://github.com/tc39/proposal-intl-unit-protocol/issues/8)).
+3. **Format as `"111"`**: Only check for protocol when `style` is `"unit"` or `"currency"` (also resolves [#8](https://github.com/tc39/proposal-intl-unit-protocol/issues/8)).
 
 </div>
 </div>
