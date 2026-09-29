@@ -18,7 +18,7 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.5rem;
 }
-;color:#ffffff;background-color:#2c3e50;background-image:none;" data-marpit-pagination-total="7">
+;color:#ffffff;background-color:#2c3e50;background-image:none;" data-marpit-pagination-total="8">
 <h1 id="intl-unit-protocol">Intl Unit Protocol</h1>
 <h2 id="stage-2-update">Stage 2 Update</h2>
 <h3 id="september-2026-tc39">September 2026 TC39</h3>
@@ -34,7 +34,7 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.5rem;
 }
-;" data-marpit-pagination-total="7">
+;" data-marpit-pagination-total="8">
 <h2 id="background--motivation">Background &amp; Motivation</h2>
 <div class="columns">
 <div>
@@ -72,7 +72,7 @@ formatter.<span class="hljs-title function_">format</span>({
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.5rem;
 }
-;" data-marpit-pagination-total="7">
+;" data-marpit-pagination-total="8">
 <h2 id="proposal-recap">Proposal Recap</h2>
 <div class="columns">
 <div>
@@ -114,7 +114,7 @@ formatter.<span class="hljs-title function_">format</span>({
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.5rem;
 }
-;" data-marpit-pagination-total="7">
+;" data-marpit-pagination-total="8">
 <h2 id="issue-5-protocol-sniffing-behavior">Issue #5: Protocol sniffing behavior</h2>
 <ul>
 <li><code>format()</code> historically coerces Object arguments via <code>ToPrimitive</code>. Unconditionally reading <code>.value</code> breaks existing objects relying on <code>Symbol.toPrimitive</code> or <code>valueOf</code>.</li>
@@ -141,7 +141,7 @@ formatter.<span class="hljs-title function_">format</span>({
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.5rem;
 }
-;" data-marpit-pagination-total="7">
+;" data-marpit-pagination-total="8">
 <h2 id="issue-5-unit-null-vs-unit-undefined">Issue #5: <code>unit: null</code> vs <code>unit: undefined</code></h2>
 <div class="columns">
 <div>
@@ -186,7 +186,57 @@ formatter.<span class="hljs-title function_">format</span>({
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.5rem;
 }
-;" data-marpit-pagination-total="7">
+;" data-marpit-pagination-total="8">
+<h2 id="open-question-coercing-the-value-field-6">Open Question: Coercing the <code>value</code> field (#6)</h2>
+<div class="columns">
+<div>
+<p>Should <code>ToIntlMathematicalValue</code> (and thus <code>ToPrimitive</code>) be called on <code>.value</code>?</p>
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-javascript"><span class="hljs-keyword">class</span> <span class="hljs-title class_">CustomDecimal</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params">val</span>) {
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">val</span> = <span class="hljs-title class_">String</span>(val);
+  }
+  [<span class="hljs-title class_">Symbol</span>.<span class="hljs-property">toPrimitive</span>]() {
+    <span class="hljs-keyword">return</span> <span class="hljs-variable language_">this</span>.<span class="hljs-property">val</span>;
+  }
+}
+
+formatter.<span class="hljs-title function_">format</span>({
+  <span class="hljs-attr">value</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">CustomDecimal</span>(<span class="hljs-number">333</span>),
+  <span class="hljs-attr">unit</span>: <span class="hljs-string">&quot;meter&quot;</span>,
+});
+</code></pre>
+</div>
+<div>
+<ol>
+<li><strong>Yes, coerce with <code>ToIntlMathematicalValue</code></strong> <em>(current spec)</em>:
+<ul>
+<li>Uses standard ECMA-402 AO handling Number, BigInt, String, and <code>ToPrimitive</code> objects.</li>
+<li>Unit protocol deals only with unpacking <code>{ value, unit }</code> without changing number consumption semantics.</li>
+<li>Seamlessly supports custom numeric types.</li>
+</ul>
+</li>
+<li><strong>No, disallow object coercion</strong>:
+<ul>
+<li>Aligns with &quot;stop coercing things&quot; principle.</li>
+<li>Downside: Makes <code>format()</code> self-inconsistent (<code>format(obj)</code> coerces, but <code>format({ value: obj, unit })</code> would not).</li>
+</ul>
+</li>
+</ol>
+</div>
+</div>
+<footer>Intl Unit Protocol - Stage 2 Update</footer>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="7" data-paginate="true" data-footer="Intl Unit Protocol - Stage 2 Update" data-theme="default" data-style=".columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+" lang="C" data-marpit-pagination="7" style="--paginate:true;--footer:Intl Unit Protocol - Stage 2 Update;--theme:default;--style:.columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+;" data-marpit-pagination-total="8">
 <h2 id="open-question-non-unit-formatters-7">Open Question: Non-unit formatters (#7)</h2>
 <div class="columns">
 <div>
@@ -214,17 +264,17 @@ nf.<span class="hljs-title function_">format</span>({
 </div>
 <footer>Intl Unit Protocol - Stage 2 Update</footer>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="7" data-paginate="true" data-footer="Intl Unit Protocol - Stage 2 Update" data-class="lead" data-background-color="#2c3e50" data-color="#ffffff" data-theme="default" data-style=".columns {
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="8" data-paginate="true" data-footer="Intl Unit Protocol - Stage 2 Update" data-class="lead" data-background-color="#2c3e50" data-color="#ffffff" data-theme="default" data-style=".columns {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.5rem;
 }
-" lang="C" class="lead" data-marpit-pagination="7" style="--paginate:true;--footer:Intl Unit Protocol - Stage 2 Update;--class:lead;--background-color:#2c3e50;--color:#ffffff;--theme:default;--style:.columns {
+" lang="C" class="lead" data-marpit-pagination="8" style="--paginate:true;--footer:Intl Unit Protocol - Stage 2 Update;--class:lead;--background-color:#2c3e50;--color:#ffffff;--theme:default;--style:.columns {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.5rem;
 }
-;color:#ffffff;background-color:#2c3e50;background-image:none;" data-marpit-pagination-total="7">
+;color:#ffffff;background-color:#2c3e50;background-image:none;" data-marpit-pagination-total="8">
 <h1 id="discussion">Discussion</h1>
 <footer>Intl Unit Protocol - Stage 2 Update</footer>
 </section>
