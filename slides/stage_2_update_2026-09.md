@@ -103,15 +103,14 @@ let result =
 - Solution: Perform `Get` on `"value"` and `"unit"`. Only activate the protocol if neither is `undefined`:
 
 ```
-1. Let value be input.
-2. Let inputUnit be undefined.
-3. If input is an Object, then
-   a. Let candidateValue be ? Get(input, "value").
-   b. Let candidateInputUnit be ? Get(input, "unit").
-   c. If candidateValue is not undefined and candidateInputUnit is not undefined:
-      i. Set value to candidateValue.
-      ii. Set inputUnit to candidateInputUnit.
-4. Let intlMV be ? ToIntlMathematicalValue(value).
+1. Let _value_ be _input_.
+2. Let _unit_ be *undefined*.
+3. If _input_ is an Object, then
+  a. Let _protocolValue_ be ? Get(_input_, *"value"*).
+  b. Let _protocolUnit_ be ? Get(_input_, *"unit"*).
+  c. If _protocolValue_ is not *undefined* and _protocolUnit_ is not *undefined*, then
+    i. Set _value_ to _protocolValue_.
+    ii. Set _unit_ to _protocolUnit_.
 ```
 
 ---
