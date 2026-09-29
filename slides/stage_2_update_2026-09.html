@@ -120,15 +120,14 @@ formatter.<span class="hljs-title function_">format</span>({
 <li><code>format()</code> historically coerces Object arguments via <code>ToPrimitive</code>. Unconditionally reading <code>.value</code> breaks existing objects relying on <code>Symbol.toPrimitive</code> or <code>valueOf</code>.</li>
 <li>Solution: Perform <code>Get</code> on <code>&quot;value&quot;</code> and <code>&quot;unit&quot;</code>. Only activate the protocol if neither is <code>undefined</code>:</li>
 </ul>
-<pre is="marp-pre" data-auto-scaling="downscale-only"><code>1. Let value be input.
-2. Let inputUnit be undefined.
-3. If input is an Object, then
-   a. Let candidateValue be ? Get(input, &quot;value&quot;).
-   b. Let candidateInputUnit be ? Get(input, &quot;unit&quot;).
-   c. If candidateValue is not undefined and candidateInputUnit is not undefined:
-      i. Set value to candidateValue.
-      ii. Set inputUnit to candidateInputUnit.
-4. Let intlMV be ? ToIntlMathematicalValue(value).
+<pre is="marp-pre" data-auto-scaling="downscale-only"><code>1. Let _value_ be _input_.
+2. Let _unit_ be *undefined*.
+3. If _input_ is an Object, then
+  a. Let _protocolValue_ be ? Get(_input_, *&quot;value&quot;*).
+  b. Let _protocolUnit_ be ? Get(_input_, *&quot;unit&quot;*).
+  c. If _protocolValue_ is not *undefined* and _protocolUnit_ is not *undefined*, then
+    i. Set _value_ to _protocolValue_.
+    ii. Set _unit_ to _protocolUnit_.
 </code></pre>
 <footer>Intl Unit Protocol - Stage 2 Update</footer>
 </section>
