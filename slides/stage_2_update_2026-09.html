@@ -40,9 +40,9 @@
 <div>
 <p>A number ought to be annotated with the quantity it is measuring.</p>
 <ul>
-<li>The unit is part of the <strong>data model</strong>, not just a formatting style.</li>
+<li>The unit is part of the data model, not just a formatting style.</li>
+<li>Only MessageFormat input without a native JS type.</li>
 <li>Unlocks locale unit preferences and automatic unit conversion.</li>
-<li>Only data type needed for MessageFormat 2.0 without a JS analog.</li>
 <li>Defines how <code>Amount</code> and third-party classes interface with <code>Intl</code>.</li>
 </ul>
 </div>
@@ -157,7 +157,7 @@ formatter.<span class="hljs-title function_">format</span>({
 });
 <span class="hljs-comment">// &quot;333&quot;</span>
 </code></pre>
-<p>Aligned with <code>Amount</code>: <code>null</code> represents no unit.</p>
+<p><code>null</code> is used for a number with explicitly no unit.</p>
 </div>
 <div>
 <h3 id="fallback-unit-undefined">Fallback: <code>unit: undefined</code></h3>
@@ -171,7 +171,7 @@ formatter.<span class="hljs-title function_">format</span>({
 });
 <span class="hljs-comment">// &quot;111&quot;</span>
 </code></pre>
-<p>Reverts to calling <code>Symbol.toPrimitive</code> on input.</p>
+<p>No difference between explicit <code>undefined</code> and a missing field.</p>
 </div>
 </div>
 <footer>Intl Unit Protocol - Stage 2 Update</footer>
@@ -193,11 +193,14 @@ formatter.<span class="hljs-title function_">format</span>({
 <p>What should happen when passing a protocol object to a non-unit/non-currency formatter?</p>
 <pre is="marp-pre" data-auto-scaling="downscale-only"><code class="language-javascript"><span class="hljs-keyword">const</span> nf =
   <span class="hljs-keyword">new</span> <span class="hljs-title class_">Intl</span>.<span class="hljs-title class_">NumberFormat</span>(<span class="hljs-string">&quot;en&quot;</span>);
-  <span class="hljs-comment">// default: style &quot;decimal&quot;</span>
 
 nf.<span class="hljs-title function_">format</span>({
   <span class="hljs-attr">value</span>: <span class="hljs-number">333</span>,
   <span class="hljs-attr">unit</span>: <span class="hljs-literal">null</span>,
+  [<span class="hljs-title class_">Symbol</span>.<span class="hljs-property">toPrimitive</span>](hint) {
+    <span class="hljs-keyword">return</span> hint === <span class="hljs-string">&quot;number&quot;</span>
+      ? <span class="hljs-number">111</span> : <span class="hljs-number">222</span>;
+  },
 });
 </code></pre>
 </div>
@@ -205,7 +208,7 @@ nf.<span class="hljs-title function_">format</span>({
 <ol>
 <li><strong>Throw <code>TypeError</code></strong>: Formatter was not configured with <code>style: &quot;unit&quot;</code> or <code>&quot;currency&quot;</code> (current spec text).</li>
 <li><strong>Format as <code>&quot;333&quot;</code></strong>: Ignore the <code>null</code> unit as dimensionless.</li>
-<li><strong>Fall back to <code>Symbol.toPrimitive</code></strong>: Only check for protocol when <code>style</code> is <code>&quot;unit&quot;</code> or <code>&quot;currency&quot;</code> (also resolves <a href="https://github.com/tc39/proposal-intl-unit-protocol/issues/8">#8</a>).</li>
+<li><strong>Format as <code>&quot;111&quot;</code></strong>: Only check for protocol when <code>style</code> is <code>&quot;unit&quot;</code> or <code>&quot;currency&quot;</code> (also resolves <a href="https://github.com/tc39/proposal-intl-unit-protocol/issues/8">#8</a>).</li>
 </ol>
 </div>
 </div>
